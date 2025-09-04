@@ -209,3 +209,4 @@ notes-comments.txt
 test/
 *.db
 .github/
+event_logs/
