@@ -264,7 +264,7 @@ Examples:
     # Setup logging
     logger = setup_logging(local_log_path)
     
-    logger.info(f"Starting data transfer process for Run ID: {run_id}")
+    logger.info(f"Starting data transfer process for: {run_id}")
     logger.info(f"Source directory: {args.source_dir}")
     
     # Check if run_ID already exists and has SUCCESS or PROCESSING status
