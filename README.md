@@ -66,15 +66,26 @@ python3 transfer.py --source /path/to/source --target /path/to/dest --max-retrie
 ### Status Monitoring
 
 ```bash
-# View all transfer runs in CSV format
+# View all transfers
 python3 status.py
 
-# View specific run by ID
+# Filter by status
+python3 status.py --status SUCCESS
+
+# Filter by specific run ID
 python3 status.py --run-id XXXX
+
+# Display only run IDs (no headers)
+python3 status.py --print-ids
+
+# Display only run IDs for successful transfers
+python3 status.py --print-ids --status SUCCESS
 ```
 
 #### Status Command Arguments
 
 | Argument | Required | Description |
 |----------|----------|-------------|
-| `--run-id` | No | Show results for specific run ID only |
+| `--print-ids` | No | Display only run IDs without headers (useful for piping to other commands) |
+| `--status` | No | Filter by transfer status (SUCCESS, FAILED, PROCESSING) |
+| `--run-id` | No | Filter by specific run ID |
