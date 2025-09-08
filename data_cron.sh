@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 DATA_ROOT=""
 RUN_FOLDER_PATTERN=""
 FILE_LOOKUP=""
@@ -8,5 +10,5 @@ find ${DATA_ROOT}/${RUN_FOLDER_PATTERN} -name ${FILE_LOOKUP} -type f | \
 while read file; do
     summary_dir=$(dirname "$file")
     run_dir=$(dirname $(dirname "$summary_dir"))
-    python3 ${SRC_DIR}/transfer.py --run "$run_dir" --target ${DESTINATION}
+    python3 ${SRC_DIR}/transfer.py --source "$run_dir" --target ${DESTINATION}
 done
