@@ -80,7 +80,7 @@ def main():
     finally:
         conn.close()
     if result and result[0] in ["SUCCESS", "PROCESSING"]:
-        logger.info(f"{run_id} status {result[0]}")
+        logger.info(f"Skipping {run_id} with status {result[0]}")
         return
     
     dir_size = get_dir_size(source_path)
