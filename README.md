@@ -2,15 +2,7 @@
 
 ## Introduction
 
-A script to performs secure file synchronization with comprehensive verification and logging. This script transfers files from a source directory to a destination (local or remote) using rsync with checksum verification, creates MD5 hash mappings for integrity validation, maintains detailed transfer logs, and tracks all operations in a SQLite database.
-
-The script performs extensive checks:
-
-- **Invalid source directory**: Validates existence and readability.
-- **Network issues**: Retry mechanism for failed transfers.
-- **Permission errors**: Detailed error logging.
-- **Duplicate transfers**: Prevents multiple transfers of the same run_ID.
-- **Incomplete transfers**: Verification step ensures all files are transferred.
+A script to perform data transfer with retry logic and status tracking.
 
 ### Recommendations
 
@@ -34,45 +26,55 @@ git clone https://github.com/maurya-anand/data-cron.git
 cd data-cron
 ```
 
-### 2. Verify
+### 2. Configuration
+
+Configure these variables in the script:
 
 ```bash
-python3 transfer.py --help
+DATA_ROOT=""              # Root directory to search for data
+RUN_FOLDER_PATTERN=""     # Pattern to match run folders
+FILE_LOOKUP=""            # Specific file to look for (triggers transfer)
+DESTINATION=""            # Target destination for transfers
+SRC_DIR=""                # Script directory containing transfer.py
 ```
 
-## Usage
+### 3. Cron Integration
+
+Add to crontab for automated execution:
 
 ```bash
-python3 transfer.py --source_dir SOURCE_DIR --destination_dir DESTINATION_DIR [OPTIONS]
+# Run every 6 hours
+0 */6 * * * bash /path/to/data_cron.sh 
 ```
 
-### Command Line Arguments
+## Manual Usage
+
+### Transfer Script
+
+```bash
+python3 transfer.py --source /path/to/source --target /path/to/dest --max-retries 10
+```
+
+#### Command Line Arguments
 
 | Argument | Required | Description |
 |----------|----------|-------------|
-| `--source_dir` | Yes | Source directory path (must exist and be readable) |
-| `--destination_dir` | Yes | Destination directory path (local or remote) |
-| `--max_retry` | No | Maximum retry attempts for rsync transfer (default: 10) |
-| `--db_path` | No | Path to SQLite database file (default: sync_info.db in script directory) |
+| `--source` | Yes | Source directory path (must exist and be readable) |
+| `--target` | Yes | Destination directory path (local or remote) |
+| `--max-retries` | No | Maximum retry attempts for rsync transfer (default: 10) |
 
-### Examples
-
-#### Local Transfer
+### Status Monitoring
 
 ```bash
-# Basic transfer
-python3 transfer.py --source_dir /data/Run-001 --destination_dir /backup
+# View all transfer runs in CSV format
+python3 status.py
 
-# Transfer to remote server
-python3 transfer.py --source_dir /data/Run-001 --destination_dir user@server:/remote/backup
-
-# With custom database location & retry limit
-python3 transfer.py --source_dir /data/Run-001 --destination_dir /backup --db_path /custom/path/transfers.db --max_retry 5
+# View specific run by ID
+python3 status.py --run-id XXXX
 ```
 
-### Outputs
+#### Status Command Arguments
 
-1. **Transfer Logs**: Detailed logs with timestamps stored in `event_logs/`.
-1. **MD5 Mapping Files**: TSV files containing source MD5, source path, and target path.
-1. **Database Records**: SQLite database tracking all transfer operations.
-1. **Console Output**: Real-time progress with timestamps.
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `--run-id` | No | Show results for specific run ID only |
