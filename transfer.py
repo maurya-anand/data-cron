@@ -98,7 +98,7 @@ def main():
                   log_path=str(log_file_path))
     
     logger.info(f"Starting rsync for {run_id}")
-    rsync_cmd = ["rsync", "-avP", "--update", str(source_path), str(target_path) + "/"]
+    rsync_cmd = ["rsync", "-avP", "--update", "--whole-file", "--no-compress", "--inplace", "--numeric-ids", str(source_path), str(target_path) + "/"]
     max_retries = args.max_retries
     status = None
     for attempt in range(1, max_retries + 1):
