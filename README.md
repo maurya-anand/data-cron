@@ -67,25 +67,47 @@ python3 transfer.py --source /path/to/source --target /path/to/dest --max-retrie
 
 ```bash
 # View all transfers
-python3 status.py
+utils/db_cli.py --db db/data_transfer.db query
 
 # Filter by status
-python3 status.py --status SUCCESS
+utils/db_cli.py --db db/data_transfer.db query --status SUCCESS
 
 # Filter by specific run ID
-python3 status.py --run-id XXXX
+utils/db_cli.py --db db/data_transfer.db query --run-id XXXXX
 
-# Display only run IDs (no headers)
-python3 status.py --print-ids
+# Filter by specific run ID and show status column
+utils/db_cli.py --db db/data_transfer.db query --run-id XXXXX --columns run_id status
 
 # Display only run IDs for successful transfers
-python3 status.py --print-ids --status SUCCESS
+utils/db_cli.py --db db/data_transfer.db query --status SUCCESS --columns run_id
+
+# Export to csv (including header)
+utils/db_cli.py --db db/data_transfer.db query --status SUCCESS --header
 ```
 
 #### Status Command Arguments
 
-| Argument | Required | Description |
-|----------|----------|-------------|
-| `--print-ids` | No | Display only run IDs without headers (useful for piping to other commands) |
-| `--status` | No | Filter by transfer status (SUCCESS, FAILED, PROCESSING) |
-| `--run-id` | No | Filter by specific run ID |
+```
+usage: db_cli.py query [-h] [--columns COLUMNS [COLUMNS ...]] [--limit LIMIT] [--where WHERE] [--order-by ORDER_BY] [--run-id RUN_ID] [--status STATUS] [--source-dir SOURCE_DIR] [--target-dir TARGET_DIR]
+                       [--log-path LOG_PATH] [--transfer-date TRANSFER_DATE] [--transfer-time TRANSFER_TIME] [--header]
+
+options:
+  -h, --help            show this help message and exit
+  --columns COLUMNS [COLUMNS ...]
+                        Columns to select (default: all standard columns)
+  --limit LIMIT         Maximum number of rows to return
+  --where WHERE         Custom WHERE clause for complex filtering
+  --order-by ORDER_BY   ORDER BY clause (default: transfer_date DESC, transfer_time DESC)
+  --run-id RUN_ID       Filter by specific run_id
+  --status STATUS       Filter by status
+  --source-dir SOURCE_DIR
+                        Filter by source directory
+  --target-dir TARGET_DIR
+                        Filter by target directory
+  --log-path LOG_PATH   Filter by log path
+  --transfer-date TRANSFER_DATE
+                        Filter by transfer date
+  --transfer-time TRANSFER_TIME
+                        Filter by transfer time
+  --header              Show column headers
+```
