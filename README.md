@@ -82,7 +82,7 @@ utils/db_cli.py --db db/data_transfer.db query --run-id XXXXX --columns run_id s
 utils/db_cli.py --db db/data_transfer.db query --status SUCCESS --columns run_id
 
 # Export to csv (including header)
-utils/db_cli.py --db db/data_transfer.db query --status SUCCESS --header
+utils/db_cli.py --db db/data_transfer.db query --status SUCCESS --header > exported_data.csv
 ```
 
 #### Status Command Arguments
