@@ -36,7 +36,7 @@ class DataTransfer:
         self.source_path = Path(source).resolve()
         self.target_path = Path(target)
         self.max_retries = max_retries
-        self.run_id = self.source_path.name
+        self.run_id = self.target_path.name
         self.target_run_dir = self.target_path / self.run_id
 
         script_dir = Path(__file__).resolve().parent
@@ -73,18 +73,18 @@ class DataTransfer:
         Args:
             status (str): Transfer status (PROCESSING, SUCCESS, FAILED)
             **kwargs: Additional fields for database update (date, time, source,
-                     target, log_path) - required when status is PROCESSING
+                    target, log_path) - required when status is PROCESSING
         """
         conn = sqlite3.connect(str(self.db_path))
         try:
             if status == "PROCESSING":
                 conn.execute(
                     """INSERT OR REPLACE INTO run (
-                             run_id, transfer_date,
-                             transfer_time, source_dir,
-                             target_dir, status,
-                             log_path) 
-                             VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                            run_id, transfer_date,
+                            transfer_time, source_dir,
+                            target_dir, status,
+                            log_path) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?)""",
                     (
                         self.run_id,
                         kwargs["date"],
@@ -128,7 +128,7 @@ class DataTransfer:
             str: Directory size (e.g., "5.5G") or "Unknown" if command fails
         """
         result = subprocess.run(
-            ["du", "-sh", str(self.source_path)], capture_output=True, text=True
+            ["du", "-sh", str(self.source_path)], stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
         return result.stdout.strip() if result.returncode == 0 else "Unknown"
 
@@ -249,7 +249,7 @@ class DataTransfer:
             str(self.target_run_dir) + "/",
         ]
 
-        subprocess.run(log_transfer_cmd, capture_output=True)
+        subprocess.run(log_transfer_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         return status
 
