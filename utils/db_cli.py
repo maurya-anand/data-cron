@@ -27,7 +27,7 @@ class TransferDB:
         Returns:
             sqlite3.Connection: Database connection object.
         """
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(str(self.db_path))
         return conn
 
     def query(
