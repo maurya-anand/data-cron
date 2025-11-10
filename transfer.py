@@ -19,7 +19,7 @@ class DataTransfer:
 
     This class performs rsync-based data transfers with a two-stage approach:
     1. Fast initial transfer using --whole-file and --inplace flags
-    2. Verification using --append-verify to catch partial files
+    2. Verification using second rsync.
 
     All transfers are logged to SQLite database with status tracking.
     """
@@ -138,11 +138,11 @@ class DataTransfer:
 
         The transfer process uses a two-stage approach:
         1. Fast initial rsync with --whole-file, --inplace, --no-compress
-        2. Verification rsync with --append-verify to catch partial transfers
+        2. Verification rsync to catch errors.
 
-        Only the verification result determines success/failure. This handles
-        cases where network interruptions cause partial files that the first
-        rsync doesn't detect due to --inplace flag.
+        Only the verification result determines success/failure. The second pass
+        detects and retransfers any files that failed or were partially
+        written during the first pass.
 
         Returns:
             str: Final transfer status ("SUCCESS", "FAILED", or existing status)
@@ -172,7 +172,6 @@ class DataTransfer:
         rsync_cmd = [
             "rsync",
             "-avP",
-            "--update",
             "--whole-file",
             "--no-compress",
             "--inplace",
