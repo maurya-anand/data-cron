@@ -183,7 +183,6 @@ class DataTransfer:
         verification_cmd = [
             "rsync",
             "-avP",
-            "--append-verify",
             "--numeric-ids",
             "--inplace",
             str(self.source_path),
