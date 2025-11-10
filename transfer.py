@@ -183,8 +183,9 @@ class DataTransfer:
         verification_cmd = [
             "rsync",
             "-avP",
-            "--update",
-            "--checksum",
+            "--whole-file",
+            "--no-compress",
+            "--inplace",
             "--numeric-ids",
             str(self.source_path),
             str(self.target_path) + "/",
@@ -211,21 +212,43 @@ class DataTransfer:
                     )
 
                 log.flush()
-                result = subprocess.run(rsync_cmd, stdout=log, stderr=subprocess.STDOUT)
-                result_verification = subprocess.run(
-                    verification_cmd, stdout=log, stderr=subprocess.STDOUT
+                result = subprocess.run(
+                    rsync_cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True
                 )
+                combined_output = result.stdout + result.stderr
+                log.write(combined_output)
+                log.flush()
+                result_verification = subprocess.run(
+                    verification_cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True
+                )
+                verification_output = result_verification.stdout + result_verification.stderr
+                log.write(verification_output)
+                log.flush()
                 end_time = datetime.now()
-
-                if result_verification.returncode == 0:
+                all_output = combined_output + verification_output
+                has_file_errors = (
+                    'failed:' in all_output or
+                    'rsync error:' in all_output or
+                    'error' in all_output.lower()
+                )
+                if result_verification.returncode == 0 and not has_file_errors:
                     log.write(
                         f"{end_time.strftime('%m/%d/%Y')} {end_time.strftime('%H:%M:%S')} - Transfer completed successfully on attempt {attempt}\n"
                     )
                     status = "SUCCESS"
                     break
                 else:
+                    error_reason = f"exit code: {result_verification.returncode}"
+                    if has_file_errors:
+                        error_reason += ", file-level errors detected"
                     log.write(
-                        f"{end_time.strftime('%m/%d/%Y')} {end_time.strftime('%H:%M:%S')} - Transfer failed on attempt {attempt} (exit code: {result.returncode})\n"
+                        f"{end_time.strftime('%m/%d/%Y')} {end_time.strftime('%H:%M:%S')} - Transfer failed on attempt {attempt} ({error_reason})\n"
                     )
                     if attempt < self.max_retries:
                         logger.warning(
