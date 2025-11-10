@@ -19,7 +19,7 @@ class DataTransfer:
 
     This class performs rsync-based data transfers with a two-stage approach:
     1. Fast initial transfer using --whole-file and --inplace flags
-    2. Verification using --checksum to catch partial files
+    2. Verification using --append-verify to catch partial files
 
     All transfers are logged to SQLite database with status tracking.
     """
@@ -138,7 +138,7 @@ class DataTransfer:
 
         The transfer process uses a two-stage approach:
         1. Fast initial rsync with --whole-file, --inplace, --no-compress
-        2. Verification rsync with --checksum to catch partial transfers
+        2. Verification rsync with --append-verify to catch partial transfers
 
         Only the verification result determines success/failure. This handles
         cases where network interruptions cause partial files that the first
@@ -183,10 +183,9 @@ class DataTransfer:
         verification_cmd = [
             "rsync",
             "-avP",
-            "--whole-file",
-            "--no-compress",
-            "--inplace",
+            "--append-verify",
             "--numeric-ids",
+            "--inplace",
             str(self.source_path),
             str(self.target_path) + "/",
         ]
@@ -237,18 +236,15 @@ class DataTransfer:
                     'rsync error:' in all_output or
                     'error' in all_output.lower()
                 )
-                if result_verification.returncode == 0 and not has_file_errors:
+                if result.returncode == 0 and result_verification.returncode == 0 and not has_file_errors:
                     log.write(
                         f"{end_time.strftime('%m/%d/%Y')} {end_time.strftime('%H:%M:%S')} - Transfer completed successfully on attempt {attempt}\n"
                     )
                     status = "SUCCESS"
                     break
                 else:
-                    error_reason = f"exit code: {result_verification.returncode}"
-                    if has_file_errors:
-                        error_reason += ", file-level errors detected"
                     log.write(
-                        f"{end_time.strftime('%m/%d/%Y')} {end_time.strftime('%H:%M:%S')} - Transfer failed on attempt {attempt} ({error_reason})\n"
+                        f"{end_time.strftime('%m/%d/%Y')} {end_time.strftime('%H:%M:%S')} - Transfer failed on attempt {attempt}\n"
                     )
                     if attempt < self.max_retries:
                         logger.warning(
