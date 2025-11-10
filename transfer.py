@@ -262,7 +262,6 @@ class DataTransfer:
             )
 
         self._update_status(status)
-        logger.info(f"{self.run_id} transfer {status}")
 
         log_transfer_cmd = [
             "rsync",
